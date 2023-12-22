@@ -3,7 +3,6 @@ import uuid
 from pathlib import Path
 import logging
 import sys
-from posthog import Posthog
 from traceloop.sdk.version import __version__
 
 
@@ -14,19 +13,6 @@ class Telemetry:
     def __new__(cls) -> "Telemetry":
         if not hasattr(cls, "instance"):
             obj = cls.instance = super(Telemetry, cls).__new__(cls)
-            obj._telemetry_enabled = (
-                os.getenv("TRACELOOP_TELEMETRY") or "true"
-            ).lower() == "true" and "pytest" not in sys.modules
-
-            if obj._telemetry_enabled:
-                obj._posthog = Posthog(
-                    project_api_key="phc_JMTeAfG8OpaPsyHzSBtqquMvko1fmOHcW0gyqLCrF3t",
-                    host="https://app.posthog.com",
-                )
-                obj._curr_anon_id = None
-
-                posthog_logger = logging.getLogger("posthog")
-                posthog_logger.disabled = True
 
         return cls.instance
 
@@ -56,17 +42,13 @@ class Telemetry:
 
     def capture(self, event: str, event_properties: dict = {}) -> None:
         try:  # don't fail if telemetry fails
-            if self._telemetry_enabled:
-                self._posthog.capture(
-                    self._anon_id(), event, {**self._context(), **event_properties}
-                )
+            pass
         except Exception:
             pass
 
     def feature_enabled(self, key: str):
         try:  # don't fail if telemetry fails
-            if self._telemetry_enabled:
-                return self._posthog.feature_enabled(key, self._anon_id())
+            pass
         except Exception:
             pass
         return False
